@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AK's Bank</title>
+    <style>
+        :root {
+            --bg-color: #0b1121;
+            --card-bg: rgba(21, 30, 50, 0.85); 
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #2e3c54;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-main);
+            padding: 40px 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* LIVE BACKGROUND PARTICLES (ORDERED, DENSE, NO-SPIN, SLOW) */
+        #particles {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; 
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .rupee-coin {
+            position: absolute;
+            /* Using a fallback green-striped pattern just in case the 500 Rupee Note image gets blocked again! */
+            background: 
+                url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/500_Rupee_Note_Front.png/800px-500_Rupee_Note_Front.png'),
+                repeating-linear-gradient(45deg, #10b981, #047857 10px, #10b981 20px);
+            background-size: cover;
+            background-position: center;
+            
+            /* The color acts as a mask over the image to keep the blue-black theme normally */
+            color: rgba(59, 130, 246, 0.4); 
+            
+            /* CLIP THE BACKGROUND TO THE SHAPE OF THE TEXT EXACTLY! */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: currentcolor;
+            background-clip: text;
+            
+            font-weight: 900; /* Extra bold thick font to reveal maximum background image! */
+            pointer-events: auto; 
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s, color 0.4s;
+            animation: fall linear infinite;
+            user-select: none;
+            line-height: 1; /* Eliminates the empty rectangular "box" */
+        }
+
+        /* Hover Effect: Reveals the real Indian Rupee Note textured INSIDE the symbol! */
+        .rupee-coin:hover {
+            color: transparent; /* Drops the solid blue mask, revealing the real currency image under it */
+            -webkit-text-fill-color: transparent; /* Enforces transparency for clipping */
+            
+            transform: scale(2.0) !important; /* Make the single symbol POP forward enormously */
+            z-index: 100;
+            filter: drop-shadow(0 0 25px rgba(16, 185, 129, 0.9)); /* Big green glow surrounding the shape */
+        }
+
+        /* Orderly Falling without spinning */
+        @keyframes fall {
+            0% { transform: translateY(-20vh); }
+            100% { transform: translateY(120vh); }
+        }
+
+        /* MAIN UI CONTAINER */
+        .container { 
+            width: 100%; max-width: 700px; 
+            position: relative; 
+            z-index: 10;
+        }
+
+        h1 { 
+            text-align: center; 
+            font-size: 3.2rem;
+            margin-bottom: 30px;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 20px var(--primary-glow);
+            transition: transform 0.3s;
+        }
+        
+        h1:hover { transform: scale(1.05); }
+        h1 span { color: var(--primary); }
+        .logo-icon { font-size: 3.5rem; display: inline-block; vertical-align: middle; }
+
+        .card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(12px); 
+            padding: 25px; 
+            margin-bottom: 25px; 
+            border-radius: 16px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 15px 45px rgba(0,0,0,0.7), 0 0 25px var(--primary-glow);
+            border-color: var(--primary);
+        }
+
+        h3 { margin-top: 0; padding-bottom: 12px; border-bottom: 1px solid var(--border); color: var(--primary); font-size: 1.4rem; display: flex; align-items: center; gap: 12px; }
+        input { width: 100%; padding: 14px 18px; margin: 10px 0; background: #0d1425; border: 1px solid var(--border); border-radius: 8px; color: white; font-size: 1.1rem; box-sizing: border-box; transition: all 0.3s; }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transform: scale(1.01); }
+        button { padding: 14px 25px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 10px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        button:hover { background: #2563eb; transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6); }
+        button:active { transform: translateY(1px); }
+        .btn-green { background: var(--success); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); } 
+        .btn-green:hover { background: #059669; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6); }
+        .btn-red { background: var(--danger); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); } 
+        .btn-red:hover { background: #dc2626; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6); }
+        .flex { display: flex; gap: 15px; }
+
+        #output { 
+            background: rgba(0,0,0,0.6); color: #00ff41; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; white-space: pre-wrap; min-height: 80px; max-height: 200px; overflow-y: auto; font-size: 15px; border: 1px solid #003300; box-shadow: inset 0 0 10px rgba(0,255,0,0.2); 
+        }
+
+        .terminal-header { display: flex; gap: 8px; margin-bottom: 10px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        /* UPGRADED MODAL POPUP */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-box { background: var(--card-bg); border: 2px solid var(--primary); padding: 35px 30px; border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 15px 50px rgba(59, 130, 246, 0.5); text-align: center; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .modal-title { font-size: 1.8rem; color: var(--text-main); margin-bottom: 15px; font-weight: bold; letter-spacing: 0.5px; }
+        .modal-text { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 30px; white-space: pre-wrap; line-height: 1.6; text-align: center; }
+        .modal-box.is-log .modal-text { text-align: left; background: #0d1425; padding: 15px; border-radius: 8px; border: 1px solid var(--border); font-family: monospace; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); color: #d1d5db; }
+        .modal-btn { background: var(--primary); width: 150px; display: inline-block; font-size: 1.2rem;}
+    </style>
+</head>
+<body>
+    
+    <!-- HIGH-DENSITY, ORDERLY LIVE BACKGROUND EFFECTS -->
+    <div id="particles"></div>
+
+    <!-- Interactive Popup Modal -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-box" id="modalBox">
+            <div class="modal-title" id="modalTitle">Notification</div>
+            <div class="modal-text" id="modalText">Message goes here.</div>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTENT -->
+    <div class="container">
+        <h1><span class="logo-icon">🏦</span> AK's <span>Bank</span> Virtual Portal</h1>
+
+        <!-- The output terminal -->
+        <div class="card" style="border-color: #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.2);">
+            <div class="terminal-header">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <div id="output">Initialize secure connection to AK's Bank servers...</div>
+        </div>
+
+        <!-- NEW VISUAL ACCOUNT BOX -->
+        <div class="card" id="accBoxCard" style="display: none; border: 2px solid var(--success); background: rgba(16, 185, 129, 0.05); box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);">
+            <h3 style="color: var(--success); border-bottom-color: var(--success);"><span style="font-size: 1.8rem;">🔒</span> Secure Account Box</h3>
+            <div style="font-size: 1.1rem; display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <div><span style="color: var(--text-muted);">Account Number:</span> <span id="boxAcc" style="color: white; font-weight: bold; letter-spacing: 1.5px; font-size: 1.2rem;"></span></div>
+                <div><span style="color: var(--text-muted);">Account Holder:</span> <span id="boxName" style="color: white; font-weight: bold; font-size: 1.2rem;"></span></div>
+                <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin-top: 5px; border: 1px solid var(--border);">
+                    <span style="color: var(--text-muted);">Current Balance:</span> <br>
+                    <span id="boxBal" style="color: var(--success); font-weight: bold; font-size: 2.2rem; display: block; margin-top: 5px; text-shadow: 0 0 15px rgba(16,185,129,0.3);"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><span style="font-size: 1.5rem">⚡</span> 1. Open New Account</h3>
+            <div class="flex">
+                <input type="text" id="cAcc" placeholder="Account Number">
+                <input type="text" id="cName" placeholder="Account Holder Name">
+            </div>
+            <input type="number" id="cBal" placeholder="Initial Deposit Amount (₹)">
+            <button onclick="createAcc()">Create Secure Account</button>
+        </div>
+
+        <div class="card">
+            <h3><span style="font-size: 1.5rem">💸</span> 2. Financial Transactions & Transfers</h3>
+            
+            <div style="background: rgba(0,0,0,0.25); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="margin: 0 0 10px 0; color: #f8fafc;">Standard Deposit / Withdrawal</h4>
+                <div class="flex">
+                    <input type="text" id="tAcc" placeholder="Account Number">
+                    <input type="number" id="tAmt" placeholder="Amount (₹)">
+                </div>
+                <div class="flex">
+                    <button class="btn-green" onclick="transact('depositWeb')">Process Deposit</button>
+                    <button class="btn-red" onclick="transact('withdrawWeb')">Process Withdrawal</button>
+                </div>
+            </div>
+
+            <!-- UI SECTOR FOR TRANSFERS -->
+            <div style="background: rgba(168, 85, 247, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(168, 85, 247, 0.3);">
+                <h4 style="margin: 0 0 10px 0; color: #a855f7;">Wire Transfer (Account-to-Account)</h4>
+                <div class="flex">
+                    <input type="text" id="tfFrom" placeholder="Sender Account No">
+                    <input type="text" id="tfTo" placeholder="Receiver Account No">
+                </div>
+                <input type="number" id="tfAmt" placeholder="Transfer Amount (₹)">
+                <button style="background: #a855f7; display: block; margin-top: 10px;" onclick="transferAction()">Initiate Wire Transfer</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><span style="font-size: 1.5rem">📊</span> 3. Account Analytics & Logs</h3>
+            <div class="flex">
+                <input type="text" id="vAcc" placeholder="Account No. to Inspect">
+                <button onclick="viewData('viewAccountWeb')">Fetch Summary</button>
+                <button style="background: #8b5cf6;" onclick="viewData('viewLogsWeb')">Audit Last 5 Logs</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- The compiled C bridge file -->
+    <script src="bank.js"></script>
+    
+    <!-- The javascript connection logic -->
+    <script>
+        // High-Density Orderly Falling Particle Spawner
+        function initParticles() {
+            const container = document.getElementById('particles');
+            const boxWidth = window.innerWidth;
+            
+            // Create exactly spaced 90-pixel columns
+            const colSpacing = 90; 
+            const columns = Math.floor(boxWidth / colSpacing);
+            const rows = 5; // 5 HUGE symbols per column visible constantly
+            
+            for (let c = 0; c < columns; c++) {
+                // Clear out the very center screen so it doesn't block the UI! The sides will be packed.
+                // 700px max width card area. Middle percentage is about spanning the 750 pixels center.
+                const centerStart = (boxWidth / 2) - 400;
+                const centerEnd = (boxWidth / 2) + 400;
+                
+                let colX = c * colSpacing + 10; // Position is strict to keep it orderly
+                
+                // Skip spawning symbols precisely behind the main UI window logic
+                if (colX > centerStart && colX < centerEnd) {
+                    continue; // Leave the middle empty, pack the lateral sides!
+                }
+                
+                for (let r = 0; r < rows; r++) {
+                    let coin = document.createElement('div');
+                    coin.className = 'rupee-coin';
+                    coin.innerText = '₹';
+                    
+                    coin.style.left = colX + 'px';
+                    
+                    // Super Slow Falling speed (35 Seconds!)
+                    let speed = 35;
+                    coin.style.animationDuration = speed + 's';
+                    
+                    // Exact delay calculations so they neatly trail top-to-bottom behind each other
+                    let delay = (r * (speed / rows));
+                    coin.style.animationDelay = '-' + delay + 's';
+                    
+                    // MASSIVE baseline size
+                    coin.style.fontSize = '5.5rem';
+                    
+                    container.appendChild(coin);
+                }
+            }
+        }
+        
+        // Execute the particle spawn
+        initParticles();
+
+        function refreshAccBox(accStr) {
+            if (!accStr) return;
+            // Fetch live JSON data bridging standard C API
+            let jsonStr = Module.ccall('getAccountJSONWeb', 'string', ['string'], [accStr]);
+            if (jsonStr && jsonStr !== "{}") {
+                let accData = JSON.parse(jsonStr);
+                document.getElementById('accBoxCard').style.display = 'block';
+                document.getElementById('boxAcc').innerText = accData.accNo;
+                document.getElementById('boxName').innerText = accData.name;
+                
+                // Format decimal to RUPEES standard visually
+                let formattedBal = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(accData.balance);
+                document.getElementById('boxBal').innerText = formattedBal;
+            }
+        }
+
+        function triggerPopupAndLogs(responseText, targetAccStr) {
+            const out = document.getElementById('output');
+            out.innerText += "\n> " + responseText;
+            out.scrollTop = out.scrollHeight;
+
+            let title = "🏦 AK's Bank Alert";
+            let color = "var(--primary)";
+            let isLogBox = false;
+            let isSuccess = false;
+
+            if (responseText.includes("⛔") || responseText.includes("Error")) {
+                title = "Operation Failed!";
+                color = "var(--danger)";
+            } else if (responseText.includes("✅") || responseText.includes("💰") || responseText.includes("💸") || responseText.includes("Success")) {
+                title = "Success!";
+                color = "var(--success)";
+                isSuccess = true;
+            } else if (responseText.includes("Audit Logs")) {
+                title = "📝 Historic Audit Logs";
+                color = "#a855f7";
+                isLogBox = true;
+            } else {
+                title = "Account Details";
+            }
+
+            let cleanText = responseText.replace(/✅ |⛔ |💰 |💸 |📋 /g, '');
+
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalTitle').style.color = color;
+            document.getElementById('modalText').innerText = cleanText;
+            
+            if (isLogBox) {
+                document.getElementById('modalBox').classList.add('is-log');
+            } else {
+                document.getElementById('modalBox').classList.remove('is-log');
+            }
+
+            if (targetAccStr && isSuccess) {
+                refreshAccBox(targetAccStr);
+            }
+
+            document.getElementById('customModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.remove('active');
+        }
+
+        function createAcc() {
+            let accStr = document.getElementById('cAcc').value.trim();
+            let name = document.getElementById('cName').value.trim();
+            let bal = parseFloat(document.getElementById('cBal').value);
+            
+            if (!accStr || !name || isNaN(bal)) {
+                return triggerPopupAndLogs("⛔ Error: Please fill in all account fields correctly.");
+            }
+
+            if (!Module.ccall) {
+                return triggerPopupAndLogs("⛔ FATAL ERROR: WebAssembly failed to compile properly. bank.js is missing ccall export!");
+            }
+
+            let result = Module.ccall('createAccountWeb', 'string', ['string', 'string', 'number'], [accStr, name, bal]);
+            triggerPopupAndLogs(result, accStr);
+        }
+
+        function transact(action) {
+            let accStr = document.getElementById('tAcc').value.trim();
+            let amt = parseFloat(document.getElementById('tAmt').value);
+            
+            if (!accStr || isNaN(amt)) {
+                return triggerPopupAndLogs("⛔ Error: Account number or amount is invalid.");
+            }
+
+            let result = Module.ccall(action, 'string', ['string', 'number'], [accStr, amt]);
+            triggerPopupAndLogs(result, accStr);
+        }
+
+        function transferAction() {
+            let fromAcc = document.getElementById('tfFrom').value.trim();
+            let toAcc = document.getElementById('tfTo').value.trim();
+            let amt = parseFloat(document.getElementById('tfAmt').value);
+            
+            if (!fromAcc || !toAcc || isNaN(amt)) {
+                return triggerPopupAndLogs("⛔ Error: Please supply both account numbers and an amount.");
+            }
+
+            let result = Module.ccall('transferWeb', 'string', ['string', 'string', 'number'], [fromAcc, toAcc, amt]);
+            
+            if (!result.includes("Error")) refreshAccBox(fromAcc);
+            triggerPopupAndLogs(result, null);
+        }
+
+        function viewData(action) {
+            let accStr = document.getElementById('vAcc').value.trim();
+            
+            if (!accStr) {
+                return triggerPopupAndLogs("⛔ Error: Please provide an Account Number to search.");
+            }
+
+            let result = Module.ccall(action, 'string', ['string'], [accStr]);
+            
+            if (!result.includes("Error")) refreshAccBox(accStr);
+            
+            triggerPopupAndLogs(result, null);
+        }
+
+        Module.onRuntimeInitialized = function() {
+            document.getElementById('output').innerText += "\n> 🔗 SUCCESS: AK's Bank Core Module Installed & Connected.";
+        };
+    </script>
+</body>
+</html>
